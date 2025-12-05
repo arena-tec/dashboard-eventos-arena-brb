@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard de Eventos - Arena BRB</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    
     <style>
         * {
             margin: 0;
@@ -94,6 +99,46 @@
         .btn-secondary:hover {
             background: #38a169;
             transform: translateY(-2px);
+        }
+
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .connection-status.online {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .connection-status.offline {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.online {
+            background: #48bb78;
+        }
+
+        .status-dot.offline {
+            background: #f56565;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .events-grid {
@@ -558,17 +603,18 @@
                 <div class="logo-container">
                     <img src="https://arenabsb.com.br/wp-content/uploads/2023/05/logo-header-arena-brb.svg" alt="Arena BRB">
                 </div>
-                <h1>
-                    Dashboard de Eventos
-                </h1>
+                <h1>Dashboard de Eventos</h1>
             </div>
-            <div class="header-buttons">
-                <button class="btn btn-primary" id="addEventBtn">
-                    <span>➕</span> Adicionar Evento
-                </button>
-                <button class="btn btn-secondary" id="saveBtn">
-                    <span>💾</span> Salvar Alterações
-                </button>
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <div class="connection-status online" id="connectionStatus">
+                    <div class="status-dot online" id="statusDot"></div>
+                    <span id="statusText">Conectado</span>
+                </div>
+                <div class="header-buttons">
+                    <button class="btn btn-primary" id="addEventBtn">
+                        <span>➕</span> Adicionar Evento
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -634,8 +680,9 @@
                     <label class="form-label">Prestador de Serviço de Internet *</label>
                     <select class="form-select" id="internetProvider" required>
                         <option value="">Selecione...</option>
-                        <option value="Conectar">Conectar</option>
                         <option value="Engefire">Engefire</option>
+                        <option value="Conectar">Conectar</option>
+                        <option value="Hardteck">Hardteck</option>
                         <option value="Starlink">Starlink</option>
                         <option value="Internet Básica">Internet Básica</option>
                         <option value="Sem Internet">Sem Internet</option>
@@ -710,32 +757,95 @@
     </div>
 
     <script>
+        // ============================================
+        // CONFIGURAÇÃO DO FIREBASE
+        // ============================================
+        // SUBSTITUA ESTAS INFORMAÇÕES PELAS SUAS APÓS CRIAR O PROJETO NO FIREBASE!
+        const firebaseConfig = {
+            apiKey: "AIzaSyDxJFUYEM5zeYXMXoNU49IZXyQ5-3ZbLIo",
+            authDomain: "arena-brb-dashboard.firebaseapp.com",
+            databaseURL: "https://arena-brb-dashboard-default-rtdb.firebaseio.com",
+            projectId: "arena-brb-dashboard",
+            storageBucket: "arena-brb-dashboard.firebasestorage.app",
+            messagingSenderId: "1023617101570",
+            appId: "1:1023617101570:web:cdeba00f27a10073c85c1b"
+
+        };
+
+        // Inicializar Firebase
+        let database;
+        let eventsRef;
+        let isFirebaseConfigured = false;
+        
+        try {
+            // Verificar se a configuração foi alterada
+            if (firebaseConfig.apiKey !== "SUA_API_KEY_AQUI") {
+                firebase.initializeApp(firebaseConfig);
+                database = firebase.database();
+                eventsRef = database.ref('events');
+                isFirebaseConfigured = true;
+                console.log('✅ Firebase conectado com sucesso!');
+                
+                // Monitorar status da conexão
+                database.ref('.info/connected').on('value', function(snapshot) {
+                    if (snapshot.val() === true) {
+                        updateConnectionStatus(true);
+                    } else {
+                        updateConnectionStatus(false);
+                    }
+                });
+            } else {
+                console.warn('⚠️ Configure o Firebase! Veja as instruções no arquivo INSTRUÇÕES_FIREBASE.txt');
+                showNotification('Configure o Firebase para sincronizar dados entre usuários!', 'warning');
+            }
+        } catch (error) {
+            console.error('❌ Erro ao conectar Firebase:', error);
+            isFirebaseConfigured = false;
+        }
+
+        function updateConnectionStatus(isOnline) {
+            const statusEl = document.getElementById('connectionStatus');
+            const dotEl = document.getElementById('statusDot');
+            const textEl = document.getElementById('statusText');
+            
+            if (isOnline) {
+                statusEl.className = 'connection-status online';
+                dotEl.className = 'status-dot online';
+                textEl.textContent = 'Conectado';
+            } else {
+                statusEl.className = 'connection-status offline';
+                dotEl.className = 'status-dot offline';
+                textEl.textContent = 'Desconectado';
+            }
+        }
+
+        // ============================================
+        // CÓDIGO DO APLICATIVO
+        // ============================================
         let events = [];
         let editingIndex = -1;
-        let currentTab = 'active'; // 'active' ou 'completed'
+        let currentTab = 'active';
 
         document.addEventListener('DOMContentLoaded', function() {
             initializeApp();
         });
 
         function initializeApp() {
-            loadData();
             setupEventListeners();
             
-            if (events.length === 0) {
-                loadInitialEvents();
+            if (isFirebaseConfigured) {
+                loadDataFromFirebase();
+            } else {
+                // Fallback para localStorage se Firebase não configurado
+                loadDataFromLocalStorage();
+                updateConnectionStatus(false);
             }
         }
 
         function setupEventListeners() {
             document.getElementById('addEventBtn').addEventListener('click', openAddEventModal);
             document.getElementById('addEventBtnEmpty').addEventListener('click', openAddEventModal);
-            document.getElementById('saveBtn').addEventListener('click', function() {
-                saveData();
-                showNotification('Dados salvos manualmente!', 'success');
-            });
 
-            // Abas
             document.getElementById('activeTab').addEventListener('click', function() {
                 switchTab('active');
             });
@@ -756,10 +866,57 @@
             document.getElementById('usesTurnstiles').addEventListener('change', handleTurnstilesChange);
         }
 
+        function loadDataFromFirebase() {
+            // Listener em tempo real - sincroniza automaticamente com todos os usuários
+            eventsRef.on('value', function(snapshot) {
+                const data = snapshot.val();
+                if (data && Array.isArray(data)) {
+                    events = data;
+                    renderEvents();
+                } else if (data === null) {
+                    // Primeira vez - carregar eventos iniciais
+                    loadInitialEvents();
+                } else {
+                    events = [];
+                    renderEvents();
+                }
+            }, function(error) {
+                console.error('Erro ao carregar dados:', error);
+                showNotification('Erro ao carregar eventos do Firebase', 'error');
+            });
+        }
+
+        function loadDataFromLocalStorage() {
+            const savedData = localStorage.getItem('arenaEvents');
+            if (savedData) {
+                events = JSON.parse(savedData);
+                renderEvents();
+            } else {
+                loadInitialEvents();
+            }
+        }
+
+        function saveData() {
+            if (isFirebaseConfigured) {
+                // Salvar no Firebase (sincroniza com todos)
+                eventsRef.set(events)
+                    .then(function() {
+                        console.log('✅ Dados salvos no Firebase');
+                    })
+                    .catch(function(error) {
+                        console.error('❌ Erro ao salvar:', error);
+                        showNotification('Erro ao salvar no Firebase', 'error');
+                    });
+            } else {
+                // Fallback para localStorage
+                localStorage.setItem('arenaEvents', JSON.stringify(events));
+                console.log('💾 Dados salvos localmente (configure Firebase para sincronizar)');
+            }
+        }
+
         function switchTab(tab) {
             currentTab = tab;
             
-            // Atualizar botões das abas
             document.getElementById('activeTab').classList.toggle('active', tab === 'active');
             document.getElementById('completedTab').classList.toggle('active', tab === 'completed');
             
@@ -816,32 +973,18 @@
             turnstileGroup.style.display = this.checked ? 'block' : 'none';
         }
 
-        function loadData() {
-            const savedData = localStorage.getItem('arenaEvents');
-            if (savedData) {
-                events = JSON.parse(savedData);
-                renderEvents();
-            } else {
-                document.getElementById('emptyState').style.display = 'block';
-            }
-        }
-
-        function saveData() {
-            localStorage.setItem('arenaEvents', JSON.stringify(events));
-        }
-
         function showNotification(message, type) {
             const notification = document.getElementById('notification');
             const icon = document.getElementById('notificationIcon');
             const text = document.getElementById('notificationText');
 
-            icon.textContent = type === 'success' ? '✅' : '❌';
+            icon.textContent = type === 'success' ? '✅' : type === 'warning' ? '⚠️' : '❌';
             text.textContent = message;
             notification.className = 'notification notification-' + type + ' show';
 
             setTimeout(function() {
                 notification.classList.remove('show');
-            }, 3000);
+            }, 4000);
         }
 
         function openAddEventModal() {
@@ -863,7 +1006,6 @@
             const container = document.getElementById('eventsContainer');
             const emptyState = document.getElementById('emptyState');
 
-            // Filtrar eventos baseado na aba ativa
             const filteredEvents = events.filter(function(event) {
                 if (currentTab === 'active') {
                     return !event.completed;
@@ -872,7 +1014,6 @@
                 }
             });
 
-            // Atualizar contadores nas abas
             const activeCount = events.filter(e => !e.completed).length;
             const completedCount = events.filter(e => e.completed).length;
             document.getElementById('activeCount').textContent = activeCount;
@@ -960,7 +1101,6 @@
                     html += '</label></div>';
                 }
 
-                // Checkbox de conclusão
                 html += '<div class="completion-checkbox ' + (event.completed ? 'checked' : '') + '" onclick="toggleCompletion(' + originalIndex + ')">';
                 html += '<input type="checkbox" ' + (event.completed ? 'checked' : '') + ' onclick="event.stopPropagation();">';
                 html += '<span class="completion-label">' + (event.completed ? 'Evento Concluído' : 'Marcar como Concluído') + '</span>';
@@ -984,13 +1124,11 @@
             
             if (events[index].completed) {
                 showNotification('Evento marcado como concluído!', 'success');
-                // Mudar para aba de concluídos após 1 segundo
                 setTimeout(function() {
                     switchTab('completed');
                 }, 1000);
             } else {
                 showNotification('Evento reativado!', 'success');
-                // Mudar para aba de ativos após 1 segundo
                 setTimeout(function() {
                     switchTab('active');
                 }, 1000);
