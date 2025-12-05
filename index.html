@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Eventos - Arena BRB</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #023E7C 0%, #0E76E0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header h1 {
+            color: #023E7C;
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-container {
+            background: linear-gradient(135deg, #023E7C 0%, #0E76E0 100%);
+            padding: 10px 20px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-container img {
+            height: 40px;
+            width: auto;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #023E7C 0%, #0E76E0 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(2, 62, 124, 0.4);
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .event-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .event-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #023E7C 0%, #0E76E0 100%);
+        }
+
+        .event-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .event-title {
+            color: #2d3748;
+            font-size: 20px;
+            font-weight: bold;
+            flex: 1;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px;
+            transition: all 0.2s;
+            border-radius: 5px;
+        }
+
+        .icon-btn:hover {
+            background: #f7fafc;
+            transform: scale(1.1);
+        }
+
+        .event-info {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: start;
+            gap: 10px;
+        }
+
+        .info-icon {
+            margin-top: 2px;
+            font-size: 16px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #4a5568;
+            min-width: 80px;
+        }
+
+        .info-value {
+            color: #2d3748;
+            flex: 1;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 2px;
+        }
+
+        .badge-success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge-warning {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+
+        .badge-info {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .checkout-section {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border: 2px dashed #cbd5e0;
+        }
+
+        .checkout-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .checkout-title {
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+
+        .checkbox-label:hover {
+            background: #edf2f7;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .checkout-validated {
+            background: #c6f6d5;
+            border-color: #48bb78;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            color: #2d3748;
+            font-weight: bold;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #718096;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #f7fafc;
+            color: #2d3748;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #0E76E0;
+            box-shadow: 0 0 0 3px rgba(14, 118, 224, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state-text {
+            color: #718096;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.show {
+            display: flex;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification-success {
+            border-left: 4px solid #48bb78;
+        }
+
+        .tabs-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: #4a5568;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn:hover {
+            border-color: #0E76E0;
+            color: #023E7C;
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #023E7C 0%, #0E76E0 100%);
+            color: white;
+            border-color: #023E7C;
+        }
+
+        .tab-count {
+            background: rgba(255,255,255,0.3);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 13px;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .tab-btn.active .tab-count {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .completed-badge {
+            background: #48bb78;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .event-card.completed {
+            opacity: 0.85;
+        }
+
+        .event-card.completed::before {
+            background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+        }
+
+        .completion-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #f7fafc;
+            border-radius: 8px;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid #e2e8f0;
+        }
+
+        .completion-checkbox:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        .completion-checkbox.checked {
+            background: #c6f6d5;
+            border-color: #48bb78;
+        }
+
+        .completion-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+
+        .completion-label {
+            font-weight: 600;
+            color: #2d3748;
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .events-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .header > div:first-child {
+                justify-content: center;
+            }
+
+            .header h1 {
+                font-size: 22px;
+                text-align: center;
+            }
+
+            .logo-container {
+                margin: 0 auto;
+            }
+
+            .header-buttons {
+                flex-direction: column;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab-btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                <div class="logo-container">
+                    <img src="https://arenabsb.com.br/wp-content/uploads/2023/05/logo-header-arena-brb.svg" alt="Arena BRB">
+                </div>
+                <h1>
+                    Dashboard de Eventos
+                </h1>
+            </div>
+            <div class="header-buttons">
+                <button class="btn btn-primary" id="addEventBtn">
+                    <span>➕</span> Adicionar Evento
+                </button>
+                <button class="btn btn-secondary" id="saveBtn">
+                    <span>💾</span> Salvar Alterações
+                </button>
+            </div>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs">
+                <button class="tab-btn active" id="activeTab">
+                    📅 Eventos Ativos <span class="tab-count" id="activeCount">0</span>
+                </button>
+                <button class="tab-btn" id="completedTab">
+                    ✅ Eventos Concluídos <span class="tab-count" id="completedCount">0</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="eventsContainer" class="events-grid"></div>
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">📅</div>
+            <div class="empty-state-text">Nenhum evento cadastrado ainda</div>
+            <button class="btn btn-primary" id="addEventBtnEmpty">
+                <span>➕</span> Adicionar Primeiro Evento
+            </button>
+        </div>
+    </div>
+
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">Adicionar Evento</h2>
+                <button class="close-btn" id="closeModalBtn">×</button>
+            </div>
+            <form id="eventForm">
+                <div class="form-group">
+                    <label class="form-label">Nome do Evento *</label>
+                    <input type="text" class="form-input" id="eventName" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Data do Evento *</label>
+                    <input type="date" class="form-input" id="eventDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Data da Montagem</label>
+                    <input type="date" class="form-input" id="setupDate">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Horário de Início</label>
+                    <input type="time" class="form-input" id="eventTime">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Horário de Término</label>
+                    <input type="time" class="form-input" id="eventEndTime">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Local *</label>
+                    <input type="text" class="form-input" id="eventLocation" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Prestador de Serviço de Internet *</label>
+                    <select class="form-select" id="internetProvider" required>
+                        <option value="">Selecione...</option>
+                        <option value="Conectar">Conectar</option>
+                        <option value="Engefire">Engefire</option>
+                        <option value="Starlink">Starlink</option>
+                        <option value="Internet Básica">Internet Básica</option>
+                        <option value="Sem Internet">Sem Internet</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="otherProviderGroup" style="display: none;">
+                    <label class="form-label">Especificar Prestador</label>
+                    <input type="text" class="form-input" id="otherProvider">
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="isExternalProvider">
+                        <span>Fornecedor é Externo</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="usesScreen">
+                        <span>Utilizará Telão</span>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="usesTurnstiles">
+                        <span>Utilizará Catracas</span>
+                    </label>
+                </div>
+
+                <div class="form-group" id="turnstileGroup" style="display: none;">
+                    <label class="form-label">Portões das Catracas</label>
+                    <input type="text" class="form-input" id="turnstileGates" placeholder="Ex: G11, F14, F17, K5">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Ticketeira / Sistema de Ingressos</label>
+                    <input type="text" class="form-input" id="ticketSystem" placeholder="Ex: Ingresse, Sympla, etc">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Portões de Entrada</label>
+                    <input type="text" class="form-input" id="entranceGates" placeholder="Ex: A4, A5">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Capacidade de Público</label>
+                    <input type="text" class="form-input" id="capacity" placeholder="Ex: 200 pessoas">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Observações Adicionais</label>
+                    <textarea class="form-textarea" id="notes" placeholder="Informações extras sobre o evento"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 25px;">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <span id="submitBtnText">➕ Adicionar</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="notification" class="notification">
+        <span id="notificationIcon"></span>
+        <span id="notificationText"></span>
+    </div>
+
+    <script>
+        let events = [];
+        let editingIndex = -1;
+        let currentTab = 'active'; // 'active' ou 'completed'
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        function initializeApp() {
+            loadData();
+            setupEventListeners();
+            
+            if (events.length === 0) {
+                loadInitialEvents();
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('addEventBtn').addEventListener('click', openAddEventModal);
+            document.getElementById('addEventBtnEmpty').addEventListener('click', openAddEventModal);
+            document.getElementById('saveBtn').addEventListener('click', function() {
+                saveData();
+                showNotification('Dados salvos manualmente!', 'success');
+            });
+
+            // Abas
+            document.getElementById('activeTab').addEventListener('click', function() {
+                switchTab('active');
+            });
+            document.getElementById('completedTab').addEventListener('click', function() {
+                switchTab('completed');
+            });
+
+            document.getElementById('closeModalBtn').addEventListener('click', closeEventModal);
+            document.getElementById('cancelBtn').addEventListener('click', closeEventModal);
+            document.getElementById('eventModal').addEventListener('click', function(e) {
+                if (e.target.id === 'eventModal') {
+                    closeEventModal();
+                }
+            });
+
+            document.getElementById('eventForm').addEventListener('submit', handleFormSubmit);
+            document.getElementById('internetProvider').addEventListener('change', handleProviderChange);
+            document.getElementById('usesTurnstiles').addEventListener('change', handleTurnstilesChange);
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // Atualizar botões das abas
+            document.getElementById('activeTab').classList.toggle('active', tab === 'active');
+            document.getElementById('completedTab').classList.toggle('active', tab === 'completed');
+            
+            renderEvents();
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const eventData = {
+                name: document.getElementById('eventName').value,
+                date: document.getElementById('eventDate').value,
+                setupDate: document.getElementById('setupDate').value,
+                time: document.getElementById('eventTime').value,
+                endTime: document.getElementById('eventEndTime').value,
+                location: document.getElementById('eventLocation').value,
+                internetProvider: document.getElementById('internetProvider').value === 'Outro' 
+                    ? document.getElementById('otherProvider').value 
+                    : document.getElementById('internetProvider').value,
+                isExternal: document.getElementById('isExternalProvider').checked,
+                checkoutValidated: false,
+                usesScreen: document.getElementById('usesScreen').checked,
+                usesTurnstiles: document.getElementById('usesTurnstiles').checked,
+                turnstileGates: document.getElementById('turnstileGates').value,
+                ticketSystem: document.getElementById('ticketSystem').value,
+                entranceGates: document.getElementById('entranceGates').value,
+                capacity: document.getElementById('capacity').value,
+                notes: document.getElementById('notes').value,
+                completed: false
+            };
+
+            if (editingIndex >= 0) {
+                eventData.checkoutValidated = events[editingIndex].checkoutValidated || false;
+                eventData.completed = events[editingIndex].completed || false;
+                events[editingIndex] = eventData;
+                showNotification('Evento atualizado com sucesso!', 'success');
+            } else {
+                events.push(eventData);
+                showNotification('Evento adicionado com sucesso!', 'success');
+            }
+
+            saveData();
+            closeEventModal();
+            renderEvents();
+        }
+
+        function handleProviderChange() {
+            const otherGroup = document.getElementById('otherProviderGroup');
+            otherGroup.style.display = this.value === 'Outro' ? 'block' : 'none';
+        }
+
+        function handleTurnstilesChange() {
+            const turnstileGroup = document.getElementById('turnstileGroup');
+            turnstileGroup.style.display = this.checked ? 'block' : 'none';
+        }
+
+        function loadData() {
+            const savedData = localStorage.getItem('arenaEvents');
+            if (savedData) {
+                events = JSON.parse(savedData);
+                renderEvents();
+            } else {
+                document.getElementById('emptyState').style.display = 'block';
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('arenaEvents', JSON.stringify(events));
+        }
+
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            const icon = document.getElementById('notificationIcon');
+            const text = document.getElementById('notificationText');
+
+            icon.textContent = type === 'success' ? '✅' : '❌';
+            text.textContent = message;
+            notification.className = 'notification notification-' + type + ' show';
+
+            setTimeout(function() {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function openAddEventModal() {
+            editingIndex = -1;
+            document.getElementById('modalTitle').textContent = 'Adicionar Evento';
+            document.getElementById('submitBtnText').innerHTML = '➕ Adicionar';
+            document.getElementById('eventForm').reset();
+            document.getElementById('otherProviderGroup').style.display = 'none';
+            document.getElementById('turnstileGroup').style.display = 'none';
+            document.getElementById('eventModal').classList.add('active');
+        }
+
+        function closeEventModal() {
+            document.getElementById('eventModal').classList.remove('active');
+            editingIndex = -1;
+        }
+
+        function renderEvents() {
+            const container = document.getElementById('eventsContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            // Filtrar eventos baseado na aba ativa
+            const filteredEvents = events.filter(function(event) {
+                if (currentTab === 'active') {
+                    return !event.completed;
+                } else {
+                    return event.completed;
+                }
+            });
+
+            // Atualizar contadores nas abas
+            const activeCount = events.filter(e => !e.completed).length;
+            const completedCount = events.filter(e => e.completed).length;
+            document.getElementById('activeCount').textContent = activeCount;
+            document.getElementById('completedCount').textContent = completedCount;
+
+            if (filteredEvents.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                if (currentTab === 'completed') {
+                    document.querySelector('.empty-state-text').textContent = 'Nenhum evento concluído ainda';
+                } else {
+                    document.querySelector('.empty-state-text').textContent = 'Nenhum evento ativo cadastrado';
+                }
+                return;
+            }
+
+            emptyState.style.display = 'none';
+
+            const sortedEvents = filteredEvents.slice().sort(function(a, b) {
+                return new Date(a.date) - new Date(b.date);
+            });
+
+            container.innerHTML = sortedEvents.map(function(event) {
+                const originalIndex = events.indexOf(event);
+                const eventDate = new Date(event.date + 'T00:00:00');
+                const formattedDate = eventDate.toLocaleDateString('pt-BR');
+                const setupDate = event.setupDate ? new Date(event.setupDate + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+
+                let html = '<div class="event-card' + (event.completed ? ' completed' : '') + '">';
+                html += '<div class="event-header">';
+                html += '<div class="event-title">' + event.name + '</div>';
+                html += '<div class="event-actions">';
+                html += '<button class="icon-btn" onclick="editEvent(' + originalIndex + ')" title="Editar">✏️</button>';
+                html += '<button class="icon-btn" onclick="deleteEvent(' + originalIndex + ')" title="Excluir">🗑️</button>';
+                html += '</div></div>';
+
+                html += '<div class="event-info"><span class="info-icon">📅</span><span class="info-label">Data:</span><span class="info-value">' + formattedDate + '</span></div>';
+
+                if (event.time) {
+                    html += '<div class="event-info"><span class="info-icon">🕐</span><span class="info-label">Horário:</span><span class="info-value">' + event.time;
+                    if (event.endTime) html += ' - ' + event.endTime;
+                    html += '</span></div>';
+                }
+
+                if (event.setupDate) {
+                    html += '<div class="event-info"><span class="info-icon">🔧</span><span class="info-label">Montagem:</span><span class="info-value">' + setupDate + '</span></div>';
+                }
+
+                html += '<div class="event-info"><span class="info-icon">📍</span><span class="info-label">Local:</span><span class="info-value">' + event.location + '</span></div>';
+                html += '<div class="event-info"><span class="info-icon">🌐</span><span class="info-label">Internet:</span><span class="info-value">' + event.internetProvider + '</span></div>';
+
+                if (event.capacity) {
+                    html += '<div class="event-info"><span class="info-icon">👥</span><span class="info-label">Capacidade:</span><span class="info-value">' + event.capacity + '</span></div>';
+                }
+
+                html += '<div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 5px;">';
+                if (event.usesScreen) html += '<span class="badge badge-info">📺 Telão</span>';
+                if (event.usesTurnstiles) html += '<span class="badge badge-info">🚪 Catracas</span>';
+                if (event.isExternal) html += '<span class="badge badge-warning">⚠️ Fornecedor Externo</span>';
+                if (event.completed) html += '<span class="completed-badge">✓ Concluído</span>';
+                html += '</div>';
+
+                if (event.usesTurnstiles && event.turnstileGates) {
+                    html += '<div class="event-info" style="margin-top: 10px;"><span class="info-icon">🚪</span><span class="info-label">Portões:</span><span class="info-value">' + event.turnstileGates + '</span></div>';
+                }
+
+                if (event.entranceGates) {
+                    html += '<div class="event-info"><span class="info-icon">🚶</span><span class="info-label">Entrada:</span><span class="info-value">' + event.entranceGates + '</span></div>';
+                }
+
+                if (event.ticketSystem) {
+                    html += '<div class="event-info"><span class="info-icon">🎫</span><span class="info-label">Ticketeira:</span><span class="info-value">' + event.ticketSystem + '</span></div>';
+                }
+
+                if (event.notes) {
+                    html += '<div class="event-info" style="margin-top: 10px;"><span class="info-icon">📝</span><span class="info-label">Obs:</span><span class="info-value">' + event.notes + '</span></div>';
+                }
+
+                if (event.isExternal) {
+                    html += '<div class="checkout-section ' + (event.checkoutValidated ? 'checkout-validated' : '') + '">';
+                    html += '<div class="checkout-header"><span class="checkout-title">Validação de Checkout</span></div>';
+                    html += '<label class="checkbox-label">';
+                    html += '<input type="checkbox" ' + (event.checkoutValidated ? 'checked' : '') + ' onchange="toggleCheckout(' + originalIndex + ')">';
+                    html += '<span>Remoção de fibra validada ✓</span>';
+                    html += '</label></div>';
+                }
+
+                // Checkbox de conclusão
+                html += '<div class="completion-checkbox ' + (event.completed ? 'checked' : '') + '" onclick="toggleCompletion(' + originalIndex + ')">';
+                html += '<input type="checkbox" ' + (event.completed ? 'checked' : '') + ' onclick="event.stopPropagation();">';
+                html += '<span class="completion-label">' + (event.completed ? 'Evento Concluído' : 'Marcar como Concluído') + '</span>';
+                html += '</div>';
+
+                html += '</div>';
+                return html;
+            }).join('');
+        }
+
+        function toggleCheckout(index) {
+            events[index].checkoutValidated = !events[index].checkoutValidated;
+            saveData();
+            renderEvents();
+            showNotification('Status de checkout atualizado!', 'success');
+        }
+
+        function toggleCompletion(index) {
+            events[index].completed = !events[index].completed;
+            saveData();
+            
+            if (events[index].completed) {
+                showNotification('Evento marcado como concluído!', 'success');
+                // Mudar para aba de concluídos após 1 segundo
+                setTimeout(function() {
+                    switchTab('completed');
+                }, 1000);
+            } else {
+                showNotification('Evento reativado!', 'success');
+                // Mudar para aba de ativos após 1 segundo
+                setTimeout(function() {
+                    switchTab('active');
+                }, 1000);
+            }
+            
+            renderEvents();
+        }
+
+        function editEvent(index) {
+            editingIndex = index;
+            const event = events[index];
+
+            document.getElementById('modalTitle').textContent = 'Editar Evento';
+            document.getElementById('submitBtnText').innerHTML = '💾 Salvar';
+            
+            document.getElementById('eventName').value = event.name;
+            document.getElementById('eventDate').value = event.date;
+            document.getElementById('setupDate').value = event.setupDate || '';
+            document.getElementById('eventTime').value = event.time || '';
+            document.getElementById('eventEndTime').value = event.endTime || '';
+            document.getElementById('eventLocation').value = event.location;
+            
+            const providerSelect = document.getElementById('internetProvider');
+            const standardProviders = ['Conectar', 'Engefire', 'Starlink', 'Internet Básica', 'Sem Internet'];
+            if (standardProviders.indexOf(event.internetProvider) !== -1) {
+                providerSelect.value = event.internetProvider;
+            } else {
+                providerSelect.value = 'Outro';
+                document.getElementById('otherProviderGroup').style.display = 'block';
+                document.getElementById('otherProvider').value = event.internetProvider;
+            }
+
+            document.getElementById('isExternalProvider').checked = event.isExternal;
+            document.getElementById('usesScreen').checked = event.usesScreen;
+            document.getElementById('usesTurnstiles').checked = event.usesTurnstiles;
+            document.getElementById('turnstileGates').value = event.turnstileGates || '';
+            document.getElementById('ticketSystem').value = event.ticketSystem || '';
+            document.getElementById('entranceGates').value = event.entranceGates || '';
+            document.getElementById('capacity').value = event.capacity || '';
+            document.getElementById('notes').value = event.notes || '';
+
+            if (event.usesTurnstiles) {
+                document.getElementById('turnstileGroup').style.display = 'block';
+            }
+
+            document.getElementById('eventModal').classList.add('active');
+        }
+
+        function deleteEvent(index) {
+            if (confirm('Tem certeza que deseja excluir este evento?')) {
+                events.splice(index, 1);
+                saveData();
+                renderEvents();
+                showNotification('Evento excluído com sucesso!', 'success');
+            }
+        }
+
+        function loadInitialEvents() {
+            events = [
+                {
+                    name: "Sicoob",
+                    date: "2025-12-13",
+                    setupDate: "",
+                    time: "",
+                    endTime: "",
+                    location: "Areninha Sul",
+                    internetProvider: "Conectar",
+                    isExternal: false,
+                    checkoutValidated: false,
+                    usesScreen: false,
+                    usesTurnstiles: false,
+                    turnstileGates: "",
+                    ticketSystem: "",
+                    entranceGates: "",
+                    capacity: "",
+                    notes: "",
+                    completed: false
+                },
+                {
+                    name: "Premiação Lixo Zero",
+                    date: "2025-12-03",
+                    setupDate: "",
+                    time: "19:00",
+                    endTime: "",
+                    location: "Cobogo",
+                    internetProvider: "Sem Internet",
+                    isExternal: false,
+                    checkoutValidated: false,
+                    usesScreen: false,
+                    usesTurnstiles: true,
+                    turnstileGates: "Esfera - 2 primeiras catracas",
+                    ticketSystem: "",
+                    entranceGates: "",
+                    capacity: "",
+                    notes: "Abaixar as duas primeiras catracas do esfera",
+                    completed: false
+                },
+                {
+                    name: "Incendiários",
+                    date: "2025-12-09",
+                    setupDate: "2025-12-08",
+                    time: "",
+                    endTime: "",
+                    location: "GNN",
+                    internetProvider: "Engefire",
+                    isExternal: false,
+                    checkoutValidated: false,
+                    usesScreen: true,
+                    usesTurnstiles: false,
+                    turnstileGates: "",
+                    ticketSystem: "",
+                    entranceGates: "",
+                    capacity: "",
+                    notes: "Telão - testes dia 08/12. Rodrigo ficou de enviar horário e receber nome do prestador",
+                    completed: false
+                },
+                {
+                    name: "Banco do Brasil",
+                    date: "2025-12-04",
+                    setupDate: "",
+                    time: "14:00",
+                    endTime: "00:00",
+                    location: "Tribuna de Honra e Modesto",
+                    internetProvider: "Internet Básica",
+                    isExternal: false,
+                    checkoutValidated: false,
+                    usesScreen: false,
+                    usesTurnstiles: true,
+                    turnstileGates: "Esfera - 2 primeiras catracas",
+                    ticketSystem: "",
+                    entranceGates: "",
+                    capacity: "Tribuna: 200 pessoas, Modesto: 400 pessoas",
+                    notes: "Internet na tribuna irão usar a básica. Abaixar as duas primeiras catracas do esfera",
+                    completed: false
+                },
+                {
+                    name: "Brasília Drift Kings",
+                    date: "2025-12-05",
+                    setupDate: "2025-12-02",
+                    time: "10:00",
+                    endTime: "22:00",
+                    location: "Estacionamento Leste",
+                    internetProvider: "Starlink",
+                    isExternal: false,
+                    checkoutValidated: false,
+                    usesScreen: false,
+                    usesTurnstiles: false,
+                    turnstileGates: "",
+                    ticketSystem: "",
+                    entranceGates: "Público: A4, Produção: A5",
+                    capacity: "",
+                    notes: "Evento de 05/12 a 07/12. Montagem início dia 02. Entrada público das 10h às 22h",
+                    completed: false
+                },
+                {
+                    name: "Sorriso Maroto",
+                    date: "2025-12-07",
+                    setupDate: "",
+                    time: "20:00",
+                    endTime: "",
+                    location: "Arena Principal",
+                    internetProvider: "Engefire",
+                    isExternal: true,
+                    checkoutValidated: false,
+                    usesScreen: false,
+                    usesTurnstiles: true,
+                    turnstileGates: "G11, F14, F17, K5",
+                    ticketSystem: "Ingresse",
+                    entranceGates: "G11, F14, F17, K5",
+                    capacity: "",
+                    notes: "Bilheteria entre portão E e F. Abertura dos portões 18h. Usarão catracas para leitura de ingresso. Internet a negociar com Engefire",
+                    completed: false
+                }
+            ];
+            saveData();
+            renderEvents();
+        }
+    </script>
+</body>
+</html>
