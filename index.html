@@ -652,13 +652,23 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Data do Evento *</label>
+                    <label class="form-label">Data de Início do Evento *</label>
                     <input type="date" class="form-input" id="eventDate" required>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Data da Montagem</label>
-                    <input type="date" class="form-input" id="setupDate">
+                    <label class="form-label">Data de Fim do Evento</label>
+                    <input type="date" class="form-input" id="eventEndDate">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Data de Início da Montagem</label>
+                    <input type="date" class="form-input" id="setupStartDate">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Data de Fim da Montagem</label>
+                    <input type="date" class="form-input" id="setupEndDate">
                 </div>
 
                 <div class="form-group">
@@ -680,9 +690,8 @@
                     <label class="form-label">Prestador de Serviço de Internet *</label>
                     <select class="form-select" id="internetProvider" required>
                         <option value="">Selecione...</option>
-                        <option value="Engefire">Engefire</option>
                         <option value="Conectar">Conectar</option>
-                        <option value="Hardteck">Hardteck</option>
+                        <option value="Engefire">Engefire</option>
                         <option value="Starlink">Starlink</option>
                         <option value="Internet Básica">Internet Básica</option>
                         <option value="Sem Internet">Sem Internet</option>
@@ -762,14 +771,13 @@
         // ============================================
         // SUBSTITUA ESTAS INFORMAÇÕES PELAS SUAS APÓS CRIAR O PROJETO NO FIREBASE!
         const firebaseConfig = {
-            apiKey: "AIzaSyDxJFUYEM5zeYXMXoNU49IZXyQ5-3ZbLIo",
-            authDomain: "arena-brb-dashboard.firebaseapp.com",
-            databaseURL: "https://arena-brb-dashboard-default-rtdb.firebaseio.com",
-            projectId: "arena-brb-dashboard",
-            storageBucket: "arena-brb-dashboard.firebasestorage.app",
-            messagingSenderId: "1023617101570",
-            appId: "1:1023617101570:web:cdeba00f27a10073c85c1b"
-
+            apiKey: "SUA_API_KEY_AQUI",
+            authDomain: "SEU_PROJETO.firebaseapp.com",
+            databaseURL: "https://SEU_PROJETO-default-rtdb.firebaseio.com",
+            projectId: "SEU_PROJETO",
+            storageBucket: "SEU_PROJETO.appspot.com",
+            messagingSenderId: "SEU_SENDER_ID",
+            appId: "SEU_APP_ID"
         };
 
         // Inicializar Firebase
@@ -874,8 +882,9 @@
                     events = data;
                     renderEvents();
                 } else if (data === null) {
-                    // Primeira vez - carregar eventos iniciais
-                    loadInitialEvents();
+                    // Nenhum evento no Firebase ainda
+                    events = [];
+                    renderEvents();
                 } else {
                     events = [];
                     renderEvents();
@@ -892,7 +901,8 @@
                 events = JSON.parse(savedData);
                 renderEvents();
             } else {
-                loadInitialEvents();
+                events = [];
+                renderEvents();
             }
         }
 
@@ -929,7 +939,9 @@
             const eventData = {
                 name: document.getElementById('eventName').value,
                 date: document.getElementById('eventDate').value,
-                setupDate: document.getElementById('setupDate').value,
+                eventEndDate: document.getElementById('eventEndDate').value,
+                setupStartDate: document.getElementById('setupStartDate').value,
+                setupEndDate: document.getElementById('setupEndDate').value,
                 time: document.getElementById('eventTime').value,
                 endTime: document.getElementById('eventEndTime').value,
                 location: document.getElementById('eventLocation').value,
@@ -1040,7 +1052,16 @@
                 const originalIndex = events.indexOf(event);
                 const eventDate = new Date(event.date + 'T00:00:00');
                 const formattedDate = eventDate.toLocaleDateString('pt-BR');
-                const setupDate = event.setupDate ? new Date(event.setupDate + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
+                
+                // Formatar data de fim do evento
+                const eventEndDate = event.eventEndDate ? new Date(event.eventEndDate + 'T00:00:00').toLocaleDateString('pt-BR') : null;
+                
+                // Formatar datas de montagem
+                const setupStartDate = event.setupStartDate ? new Date(event.setupStartDate + 'T00:00:00').toLocaleDateString('pt-BR') : null;
+                const setupEndDate = event.setupEndDate ? new Date(event.setupEndDate + 'T00:00:00').toLocaleDateString('pt-BR') : null;
+                
+                // Suporte para campo antigo (setupDate)
+                const legacySetupDate = event.setupDate ? new Date(event.setupDate + 'T00:00:00').toLocaleDateString('pt-BR') : null;
 
                 let html = '<div class="event-card' + (event.completed ? ' completed' : '') + '">';
                 html += '<div class="event-header">';
@@ -1050,7 +1071,13 @@
                 html += '<button class="icon-btn" onclick="deleteEvent(' + originalIndex + ')" title="Excluir">🗑️</button>';
                 html += '</div></div>';
 
-                html += '<div class="event-info"><span class="info-icon">📅</span><span class="info-label">Data:</span><span class="info-value">' + formattedDate + '</span></div>';
+                // Data de início do evento
+                html += '<div class="event-info"><span class="info-icon">📅</span><span class="info-label">Início:</span><span class="info-value">' + formattedDate + '</span></div>';
+                
+                // Data de fim do evento
+                if (eventEndDate) {
+                    html += '<div class="event-info"><span class="info-icon">🏁</span><span class="info-label">Término:</span><span class="info-value">' + eventEndDate + '</span></div>';
+                }
 
                 if (event.time) {
                     html += '<div class="event-info"><span class="info-icon">🕐</span><span class="info-label">Horário:</span><span class="info-value">' + event.time;
@@ -1058,8 +1085,19 @@
                     html += '</span></div>';
                 }
 
-                if (event.setupDate) {
-                    html += '<div class="event-info"><span class="info-icon">🔧</span><span class="info-label">Montagem:</span><span class="info-value">' + setupDate + '</span></div>';
+                // Datas de montagem
+                if (setupStartDate || setupEndDate || legacySetupDate) {
+                    let setupInfo = '';
+                    if (setupStartDate && setupEndDate) {
+                        setupInfo = setupStartDate + ' até ' + setupEndDate;
+                    } else if (setupStartDate) {
+                        setupInfo = 'Início: ' + setupStartDate;
+                    } else if (setupEndDate) {
+                        setupInfo = 'Fim: ' + setupEndDate;
+                    } else if (legacySetupDate) {
+                        setupInfo = legacySetupDate;
+                    }
+                    html += '<div class="event-info"><span class="info-icon">🔧</span><span class="info-label">Montagem:</span><span class="info-value">' + setupInfo + '</span></div>';
                 }
 
                 html += '<div class="event-info"><span class="info-icon">📍</span><span class="info-label">Local:</span><span class="info-value">' + event.location + '</span></div>';
@@ -1146,13 +1184,15 @@
             
             document.getElementById('eventName').value = event.name;
             document.getElementById('eventDate').value = event.date;
-            document.getElementById('setupDate').value = event.setupDate || '';
+            document.getElementById('eventEndDate').value = event.eventEndDate || '';
+            document.getElementById('setupStartDate').value = event.setupStartDate || event.setupDate || '';
+            document.getElementById('setupEndDate').value = event.setupEndDate || '';
             document.getElementById('eventTime').value = event.time || '';
             document.getElementById('eventEndTime').value = event.endTime || '';
             document.getElementById('eventLocation').value = event.location;
             
             const providerSelect = document.getElementById('internetProvider');
-            const standardProviders = ['Conectar', 'Engefire', 'Starlink', 'Internet Básica', 'Sem Internet'];
+            const standardProviders = ['Conectar', 'Engefire', 'Hardteck', 'Starlink', 'Internet Básica', 'Sem Internet'];
             if (standardProviders.indexOf(event.internetProvider) !== -1) {
                 providerSelect.value = event.internetProvider;
             } else {
@@ -1184,127 +1224,6 @@
                 renderEvents();
                 showNotification('Evento excluído com sucesso!', 'success');
             }
-        }
-
-        function loadInitialEvents() {
-            events = [
-                {
-                    name: "Sicoob",
-                    date: "2025-12-13",
-                    setupDate: "",
-                    time: "",
-                    endTime: "",
-                    location: "Areninha Sul",
-                    internetProvider: "Conectar",
-                    isExternal: false,
-                    checkoutValidated: false,
-                    usesScreen: false,
-                    usesTurnstiles: false,
-                    turnstileGates: "",
-                    ticketSystem: "",
-                    entranceGates: "",
-                    capacity: "",
-                    notes: "",
-                    completed: false
-                },
-                {
-                    name: "Premiação Lixo Zero",
-                    date: "2025-12-03",
-                    setupDate: "",
-                    time: "19:00",
-                    endTime: "",
-                    location: "Cobogo",
-                    internetProvider: "Sem Internet",
-                    isExternal: false,
-                    checkoutValidated: false,
-                    usesScreen: false,
-                    usesTurnstiles: true,
-                    turnstileGates: "Esfera - 2 primeiras catracas",
-                    ticketSystem: "",
-                    entranceGates: "",
-                    capacity: "",
-                    notes: "Abaixar as duas primeiras catracas do esfera",
-                    completed: false
-                },
-                {
-                    name: "Incendiários",
-                    date: "2025-12-09",
-                    setupDate: "2025-12-08",
-                    time: "",
-                    endTime: "",
-                    location: "GNN",
-                    internetProvider: "Engefire",
-                    isExternal: false,
-                    checkoutValidated: false,
-                    usesScreen: true,
-                    usesTurnstiles: false,
-                    turnstileGates: "",
-                    ticketSystem: "",
-                    entranceGates: "",
-                    capacity: "",
-                    notes: "Telão - testes dia 08/12. Rodrigo ficou de enviar horário e receber nome do prestador",
-                    completed: false
-                },
-                {
-                    name: "Banco do Brasil",
-                    date: "2025-12-04",
-                    setupDate: "",
-                    time: "14:00",
-                    endTime: "00:00",
-                    location: "Tribuna de Honra e Modesto",
-                    internetProvider: "Internet Básica",
-                    isExternal: false,
-                    checkoutValidated: false,
-                    usesScreen: false,
-                    usesTurnstiles: true,
-                    turnstileGates: "Esfera - 2 primeiras catracas",
-                    ticketSystem: "",
-                    entranceGates: "",
-                    capacity: "Tribuna: 200 pessoas, Modesto: 400 pessoas",
-                    notes: "Internet na tribuna irão usar a básica. Abaixar as duas primeiras catracas do esfera",
-                    completed: false
-                },
-                {
-                    name: "Brasília Drift Kings",
-                    date: "2025-12-05",
-                    setupDate: "2025-12-02",
-                    time: "10:00",
-                    endTime: "22:00",
-                    location: "Estacionamento Leste",
-                    internetProvider: "Starlink",
-                    isExternal: false,
-                    checkoutValidated: false,
-                    usesScreen: false,
-                    usesTurnstiles: false,
-                    turnstileGates: "",
-                    ticketSystem: "",
-                    entranceGates: "Público: A4, Produção: A5",
-                    capacity: "",
-                    notes: "Evento de 05/12 a 07/12. Montagem início dia 02. Entrada público das 10h às 22h",
-                    completed: false
-                },
-                {
-                    name: "Sorriso Maroto",
-                    date: "2025-12-07",
-                    setupDate: "",
-                    time: "20:00",
-                    endTime: "",
-                    location: "Arena Principal",
-                    internetProvider: "Engefire",
-                    isExternal: true,
-                    checkoutValidated: false,
-                    usesScreen: false,
-                    usesTurnstiles: true,
-                    turnstileGates: "G11, F14, F17, K5",
-                    ticketSystem: "Ingresse",
-                    entranceGates: "G11, F14, F17, K5",
-                    capacity: "",
-                    notes: "Bilheteria entre portão E e F. Abertura dos portões 18h. Usarão catracas para leitura de ingresso. Internet a negociar com Engefire",
-                    completed: false
-                }
-            ];
-            saveData();
-            renderEvents();
         }
     </script>
 </body>
